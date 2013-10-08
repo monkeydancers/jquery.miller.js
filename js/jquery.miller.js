@@ -16,11 +16,12 @@
 		if (methods[mixed] ) {
 			return methods[mixed].apply(this, Array.prototype.slice.call(arguments, 1));
 		} else {
-			var miller = this;
-			var hasFocus = false;
+			var miller 		= this;
+			var hasFocus 	= false;
 			var currentAjaxRequest = null;
 			var settings = $.extend(true, {
 						'url': function(id) { return id; },
+						'useAjax':true,
 						'tabindex': 0,
 						'minWidth': 40,
 						'carroussel': false,
@@ -309,34 +310,56 @@
 					}
 				}
 			;
+			var searchTree = function(parentID, tree){
+				var child = null;
+				for(var i = 0; i < tree.length; i++){
+					if(tree[i]['id'] == parentID && tree[i]['parent']){
+						child = tree[i]['children'];
+					}
+					if(!child && tree[i]['parent'] == true){
+						child =  searchTree(parentID, tree[i]['children']);
+					}
+				}
+				return child
+			}
+
 
 			var getLines = function(event) {
-					if (currentAjaxRequest) {
-						currentAjaxRequest.abort();
+					if(settings.useAjax == false){
+						if(event == null || $(this).data('id') == null){
+							buildColumn(settings.tree);
+						} else {
+							parent = $(this).data('id');
+							buildColumn(searchTree(parent, settings.tree));
+						}
+
+					} else {
+						if (currentAjaxRequest) {
+							currentAjaxRequest.abort();
+						}
+
+						currentLine = $(event.currentTarget)
+							.removeClass('parentSelected')
+							.addClass('parentLoading')
+						;
+
+						currentAjaxRequest = $.getJSON(settings.url($(this).data('id')), buildColumn)
+							.always(function() {
+									currentLine
+										.removeClass('parentLoading')
+									;
+
+									currentAjaxRequest = null;
+								}
+							)
+							.fail(function() {})
+						;
 					}
-
-					currentLine = $(event.currentTarget)
-						.removeClass('parentSelected')
-						.addClass('parentLoading')
-					;
-
-					currentAjaxRequest = $.getJSON(settings.url($(this).data('id')), buildColumn)
-						.always(function() {
-								currentLine
-									.removeClass('parentLoading')
-								;
-
-								currentAjaxRequest = null;
-							}
-						)
-						.fail(function() {})
-					;
-
 				}
 			;
 
-			$.getJSON(settings.url(), buildColumn);
-
+			// $.getJSON(settings.url(), buildColumn);
+			getLines('');
 			return miller;
 		}
 	};
