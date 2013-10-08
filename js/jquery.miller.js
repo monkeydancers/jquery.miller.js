@@ -76,6 +76,7 @@
 			);
 
 			$(document).keydown(function(event) {
+
 					if (hasFocus && currentLine && (event.which == 37 || event.which == 38 || event.which == 39 || event.which == 40)) {
 						var newCurrentLine = [];
 						var scrollTop = currentLine.parent().scrollTop();
@@ -107,6 +108,7 @@
 								}
 								break;
 						}
+
 
 						if (newCurrentLine.length && !newCurrentLine.parent().hasClass('pane')) {
 							currentLine = newCurrentLine.click();
@@ -329,7 +331,8 @@
 						if(event == null || $(this).data('id') == null){
 							buildColumn(settings.tree);
 						} else {
-							parent = $(this).data('id');
+							currentLine = $(event.currentTarget);
+							parent 		= $(this).data('id');
 							buildColumn(searchTree(parent, settings.tree));
 						}
 
